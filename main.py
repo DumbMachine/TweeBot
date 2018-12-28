@@ -1,4 +1,6 @@
 import tweepy
+from textblob import TextBlob
+import matplotlib.pyplot as plt
 consumer_key =  '2XZ8WwA60fjcn30nUwMcZGNoZ'
 consumer_secret = 'dlWKue8WH17vPRJO3bUJb9w4I1KJHQaD6MV7W0eTJFmeKQ6Gcm'
 access_token = '753985003328012288-tPRbv9Za68YBLdelJEznkud2vJSkxQj'
@@ -15,6 +17,14 @@ for page in tweepy.Cursor(api.search , q = "batman" , count = 10).pages(1):
         print(tweet.place)
 
 #To get a USERS tweets
-for page in tweepy.Cursor(api.user_timeline , id ="LinusTech" , count = 10).pages(1):
+x=[]
+y=[]
+for page in tweepy.Cursor(api.user_timeline , id ="Trump" , count = 200).pages(5):
     for tweet in page:
-        print(TextBlob(tweet.text).sentiment.polarity, TextBlob(tweet.text).sentiment.subjectivity)
+        x.append(TextBlob(tweet.text).sentiment.polarity)
+        y.append(TextBlob(tweet.text).sentiment.subjectivity)
+
+plt.plot(x,color="#9966ff")
+plt.rcParams['axes.facecolor'] = "#000000"
+plt.rcParams['lines.linewidth'] = 5
+plt.show()
