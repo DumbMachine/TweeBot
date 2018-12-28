@@ -9,9 +9,12 @@ api = tweepy.API(auth)
 
 
 
-count = 0
+#To get a hashtag , maxes at around 15000ish
 for page in tweepy.Cursor(api.search , q = "batman" , count = 10).pages(1):
     for tweet in page:
         print(tweet.place)
 
-print(count)
+#To get a USERS tweets
+for page in tweepy.Cursor(api.user_timeline , id ="LinusTech" , count = 10).pages(1):
+    for tweet in page:
+        print(TextBlob(tweet.text).sentiment.polarity, TextBlob(tweet.text).sentiment.subjectivity)
