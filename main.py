@@ -4,12 +4,13 @@ Created on Wed Jan  2 21:26:44 2019
 
 @author: ratin
 """
-
+import seaborn as sns
 import tweepy
 from textblob import TextBlob
 import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
 import requests
+from bs4 import BeautifulSoup
 
 #for geocoding r.json()["results"][0]["address_components"][3]["short_name"]
 #url = 'https://maps.googleapis.com/maps/api/geocode/json?address=Burbank+CA&key=AIzaSyAFzN_oHN633l3pAOwJbbV8GwwdnPfvrDM'
@@ -47,15 +48,51 @@ for page in tweepy.Cursor(api.search , q="#batman" , count = 200,languages=["en"
         
 for tweet in tweets:
     if tweet["location"]:
-        print(tweet["location"],tweet["sentiment"],tweet["subjectivity"])
+        print(tweet["location"])
         
         
         
 x= [tweet["sentiment"] for tweet in tweets]
+y = [tweet["subjectivity"] for tweet in tweets]
+
+#plots
+#------------------------------LinePlot
+fig, ax = plt.subplots(facecolor='#000000')
+plt.plot(x)
+plt.rcParams['axes.facecolor'] = "#000000"
+plt.rcParams['lines.linewidth'] = 2
+ax.tick_params(axis='x', colors='red')
+ax.tick_params(axis='y', colors='red')
+ax.set_xlabel("Number of Tweets",color = 'white')
+ax.set_ylabel("Polarity of the tweet",color = 'white')
 
 
-def geocoder(address):
+# Be sure to specify facecolor or it won't look right in Illustrator
+fig.savefig("output.pdf", facecolor=fig.get_facecolor(), transparent=True)
+#-----------------------------ScatterPlot
+fig, ax = plt.subplots(facecolor='#000000')
+plt.scatter(x,y)
+plt.rcParams['axes.facecolor'] = "#000000"
+plt.rcParams['lines.linewidth'] = 2
+ax.tick_params(axis='x', colors='red')
+ax.tick_params(axis='y', colors='red')
+ax.set_xlabel("Number of Tweets",color = 'white')
+ax.set_ylabel("Polarity of the tweet",color = 'white')
+
+
+def geocoder_api(address):
     url = 'https://maps.googleapis.com/maps/api/geocode/json?address=Burbank+CA&key=AIzaSyAFzN_oHN633l3pAOwJbbV8GwwdnPfvrDM'.format("+".join(address).replace(",",""))
+    print(url)
     r = requests.get(url)
     country = r.json()["results"][0]["address_components"][3]["short_name"]
-    return country
+    return country 
+
+def geocoder(address):
+    selector1= "#pane > div > div.widget-pane-content.scrollable-y > div > div > div.section-hero-header.white-foreground > div.section-hero-header-description > div:nth-child(1) > h1".replace("nth-child","nth-of-type")
+    selector = "#pane > div > div.widget-pane-content.scrollable-y > div > div > div.section-hero-header.white-foreground > div.section-hero-header-description > h2:nth-child(3) > span".replace("nth-child","nth-of-type")
+    url = "https://www.google.com/maps/place/"+ address
+    headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36'}
+    res = requests.get(url,headers = headers,verify=True)
+    soup = BeautifulSoup(res.text,'lxml')
+    print(soup.select(selector),soup.select(selector1),url)
+    return soup
