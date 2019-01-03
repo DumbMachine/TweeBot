@@ -1,0 +1,1 @@
+<pygal_maps_world.maps.World object at 0x0000021271B52B00>
