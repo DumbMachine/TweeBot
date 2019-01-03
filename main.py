@@ -10,6 +10,7 @@ from textblob import TextBlob
 import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
 import requests
+import json 
 from bs4 import BeautifulSoup
 
 #for geocoding r.json()["results"][0]["address_components"][3]["short_name"]
@@ -25,7 +26,7 @@ api = tweepy.API(auth)
 
 
 tweets = []
-for page in tweepy.Cursor(api.search , q="#batman" , count = 200,languages=["en"],tweet_mode='extended').pages(1):
+for page in tweepy.Cursor(api.search , q="#english" , count = 200,languages=["en"],tweet_mode='extended').pages(1):
     for tweet in page:
         hashtags_=[]
         urls=[]
@@ -33,10 +34,15 @@ for page in tweepy.Cursor(api.search , q="#batman" , count = 200,languages=["en"
             hashtags_.append(hashtag["text"])
 #        for media in tweet.entities["media"]:
 #            urls.append(media["expanded_url"])
-        
+        geo_url = "https://www.mapquestapi.com/geocoding/v1/address?key=KEY&inFormat=kvp&outFormat=json&location=LOCATION&thumbMaps=false".replace("KEY", KEY).replace("LOCATION",tweet.user.location)
+        try:
+            r = requests.get(url = geo_url)
+            location =json.loads(r.content.decode('utf-8'))["results"][0]["locations"][0]["adminArea1"]
+        except:
+            location = ""
         twe = {"text": tweet.full_text,
                "cleaned_text": " ".join([word for word in tweet.full_text.split() if word not in stopwords.words('english')]).replace("#","").replace("*",""),
-               "location": tweet.user.location,
+               "location": location,
                "username": tweet.user.screen_name,
                "retweets": tweet.retweet_count,
                "favcount": tweet.user.favourites_count,
@@ -45,10 +51,12 @@ for page in tweepy.Cursor(api.search , q="#batman" , count = 200,languages=["en"
                "subjectivity": TextBlob(" ".join([word for word in tweet.full_text.split() if word not in stopwords.words('english')])).sentiment.subjectivity,
                 }
         tweets.append(twe)
-        
+
+locations = []
 for tweet in tweets:
     if tweet["location"]:
-        print(tweet["location"])
+        locations.append(tweet["location"])
+        
         
         
         
@@ -58,7 +66,7 @@ y = [tweet["subjectivity"] for tweet in tweets]
 #plots
 #------------------------------LinePlot
 fig, ax = plt.subplots(facecolor='#000000')
-plt.plot(x)
+plt.plot(x, color='#9966ff')
 plt.rcParams['axes.facecolor'] = "#000000"
 plt.rcParams['lines.linewidth'] = 2
 ax.tick_params(axis='x', colors='red')
@@ -68,16 +76,22 @@ ax.set_ylabel("Polarity of the tweet",color = 'white')
 
 
 # Be sure to specify facecolor or it won't look right in Illustrator
-fig.savefig("output.pdf", facecolor=fig.get_facecolor(), transparent=True)
+#fig.savefig("output.pdf", facecolor=fig.get_facecolor(), transparent=True)
 #-----------------------------ScatterPlot
 fig, ax = plt.subplots(facecolor='#000000')
-plt.scatter(x,y)
+plt.scatter(x,y, color='#9966ff')
 plt.rcParams['axes.facecolor'] = "#000000"
 plt.rcParams['lines.linewidth'] = 2
 ax.tick_params(axis='x', colors='red')
 ax.tick_params(axis='y', colors='red')
 ax.set_xlabel("Number of Tweets",color = 'white')
 ax.set_ylabel("Polarity of the tweet",color = 'white')
+
+#----------------------------HeatPlot
+
+           
+KEY= "G5XlhCqsGp7pxVgAjGTFu04yYvnD8esq"
+
 
 
 def geocoder_api(address):
@@ -96,3 +110,6 @@ def geocoder(address):
     soup = BeautifulSoup(res.text,'lxml')
     print(soup.select(selector),soup.select(selector1),url)
     return soup
+
+
+            
