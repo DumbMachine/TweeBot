@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
 import requests
 import json 
-from pygal.style import Style
 KEY= "G5XlhCqsGp7pxVgAjGTFu04yYvnD8esq"
 
 
@@ -24,7 +23,7 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
 tweets = []
-for page in tweepy.Cursor(api.search , q="#english" , count = 20,languages=["en"],tweet_mode='extended').pages(1):
+for page in tweepy.Cursor(api.search , q="#trump" , count = 100,languages=["en"],tweet_mode='extended').pages(100):
     for tweet in page:
         hashtags_=[]
         urls=[]
@@ -89,11 +88,12 @@ y = [tweet["subjectivity"] for tweet in tweets]
 #########################################Plots################################3
 #------------------------------LinePlot
 fig, ax = plt.subplots(facecolor='#000000')
-plt.plot(x, color='#9966ff')
+plt.plot(x, color='#FF8C00')
 plt.rcParams['axes.facecolor'] = "#000000"
 plt.rcParams['lines.linewidth'] = 2
-ax.tick_params(axis='x', colors='red')
-ax.tick_params(axis='y', colors='red')
+plt.rcParams["figure.figsize"] = [11,4]
+ax.tick_params(axis='x', colors='#4666FF')
+ax.tick_params(axis='y', colors='yellow')
 ax.set_xlabel("Number of Tweets",color = 'white')
 ax.set_ylabel("Polarity of the tweet",color = 'white')
 
@@ -101,10 +101,13 @@ ax.set_ylabel("Polarity of the tweet",color = 'white')
 # Be sure to specify facecolor or it won't look right in Illustrator
 #fig.savefig("output.pdf", facecolor=fig.get_facecolor(), transparent=True)
 #-----------------------------ScatterPlot
+
+##POSTIVE AND NEGATIVE DIFFERENT COLORS PLX
 fig, ax = plt.subplots(facecolor='#000000')
 plt.scatter(x,y, color='#9966ff')
 plt.rcParams['axes.facecolor'] = "#000000"
 plt.rcParams['lines.linewidth'] = 2
+plt.rcParams["figure.figsize"] = [11,4]
 ax.tick_params(axis='x', colors='red')
 ax.tick_params(axis='y', colors='red')
 ax.set_xlabel("Number of Tweets",color = 'white')
@@ -113,15 +116,13 @@ ax.set_ylabel("Polarity of the tweet",color = 'white')
 #----------------------------HeatPlot
 sns.heatmap([x,y])  
 
-#     return soup
 
-
+import pygal
 from pygal.maps.world import World
 
 wm = World()
 wm.force_uri_protocol = 'http'
-
 wm.title="Tweets from the world"
-wm.add('North America',{'mx': 3, 'es': 1, 'us': 5, 'gb': 1, 'ca': 1, 'ly': 1, 'sa': 1, 'th': 1, 'my': 1, 'tw': 1})
+wm.add('Tweets',{'mx': 3, 'es': 1, 'us': 5, 'gb': 1, 'ca': 1, 'ly': 1, 'sa': 1, 'th': 1, 'my': 1, 'tw': 1})
 
 wm.render_to_file('map.svg')
