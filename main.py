@@ -11,10 +11,9 @@ import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
 import requests
 import json 
-from bs4 import BeautifulSoup
+from pygal.style import Style
+KEY= "G5XlhCqsGp7pxVgAjGTFu04yYvnD8esq"
 
-#for geocoding r.json()["results"][0]["address_components"][3]["short_name"]
-#url = 'https://maps.googleapis.com/maps/api/geocode/json?address=Burbank+CA&key=AIzaSyAFzN_oHN633l3pAOwJbbV8GwwdnPfvrDM'
 
 consumer_key =  '2XZ8WwA60fjcn30nUwMcZGNoZ'
 consumer_secret = 'dlWKue8WH17vPRJO3bUJb9w4I1KJHQaD6MV7W0eTJFmeKQ6Gcm'
@@ -24,9 +23,8 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
-
 tweets = []
-for page in tweepy.Cursor(api.search , q="#english" , count = 200,languages=["en"],tweet_mode='extended').pages(1):
+for page in tweepy.Cursor(api.search , q="#english" , count = 20,languages=["en"],tweet_mode='extended').pages(1):
     for tweet in page:
         hashtags_=[]
         urls=[]
@@ -42,7 +40,7 @@ for page in tweepy.Cursor(api.search , q="#english" , count = 200,languages=["en
             location = ""
         twe = {"text": tweet.full_text,
                "cleaned_text": " ".join([word for word in tweet.full_text.split() if word not in stopwords.words('english')]).replace("#","").replace("*",""),
-               "location": location,
+               "location": location.lower(),
                "username": tweet.user.screen_name,
                "retweets": tweet.retweet_count,
                "favcount": tweet.user.favourites_count,
@@ -52,18 +50,43 @@ for page in tweepy.Cursor(api.search , q="#english" , count = 200,languages=["en
                 }
         tweets.append(twe)
 
+
 locations = []
 for tweet in tweets:
     if tweet["location"]:
         locations.append(tweet["location"])
         
         
-        
-        
+from collections import Counter
+myDict=Counter(locations)
+myDict= dict(myDict)
+
+
+from pygal.maps.world import World
+wm = World()
+wm.force_uri_protocol = 'http'
+
+wm.title="Tweets from the world"
+wm.add('North America',myDict)
+
+wm.render_to_file('map.svg')
+
+#worldmap_chart = pygal.maps.world.World()
+#worldmap_chart.title = 'Countries by Tweets'
+#worldmap_chart.add('us1', [1])
+#worldmap_chart.add('sg', [1,1,2,1,1])
+#worldmap_chart.add('th', [1])
+#a = worldmap_chart.render()
+#print(len(a))
+#file=open("graf.html","w")
+#file.write(str(a))
+#file.close()
+#worldmap_chart.render_to_file('world.svg')
+#        
 x= [tweet["sentiment"] for tweet in tweets]
 y = [tweet["subjectivity"] for tweet in tweets]
 
-#plots
+#########################################Plots################################3
 #------------------------------LinePlot
 fig, ax = plt.subplots(facecolor='#000000')
 plt.plot(x, color='#9966ff')
@@ -88,28 +111,17 @@ ax.set_xlabel("Number of Tweets",color = 'white')
 ax.set_ylabel("Polarity of the tweet",color = 'white')
 
 #----------------------------HeatPlot
+sns.heatmap([x,y])  
 
-           
-KEY= "G5XlhCqsGp7pxVgAjGTFu04yYvnD8esq"
-
-
-
-def geocoder_api(address):
-    url = 'https://maps.googleapis.com/maps/api/geocode/json?address=Burbank+CA&key=AIzaSyAFzN_oHN633l3pAOwJbbV8GwwdnPfvrDM'.format("+".join(address).replace(",",""))
-    print(url)
-    r = requests.get(url)
-    country = r.json()["results"][0]["address_components"][3]["short_name"]
-    return country 
-
-def geocoder(address):
-    selector1= "#pane > div > div.widget-pane-content.scrollable-y > div > div > div.section-hero-header.white-foreground > div.section-hero-header-description > div:nth-child(1) > h1".replace("nth-child","nth-of-type")
-    selector = "#pane > div > div.widget-pane-content.scrollable-y > div > div > div.section-hero-header.white-foreground > div.section-hero-header-description > h2:nth-child(3) > span".replace("nth-child","nth-of-type")
-    url = "https://www.google.com/maps/place/"+ address
-    headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36'}
-    res = requests.get(url,headers = headers,verify=True)
-    soup = BeautifulSoup(res.text,'lxml')
-    print(soup.select(selector),soup.select(selector1),url)
-    return soup
+#     return soup
 
 
-            
+from pygal.maps.world import World
+
+wm = World()
+wm.force_uri_protocol = 'http'
+
+wm.title="Tweets from the world"
+wm.add('North America',{'mx': 3, 'es': 1, 'us': 5, 'gb': 1, 'ca': 1, 'ly': 1, 'sa': 1, 'th': 1, 'my': 1, 'tw': 1})
+
+wm.render_to_file('map.svg')
