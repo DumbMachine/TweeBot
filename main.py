@@ -51,6 +51,20 @@ for page in tweepy.Cursor(api.search , q="#trump" , count = 100,languages=["en"]
 
 
 locations = []
+pos_x = []
+pos_y = []
+neg_x = []
+neg_y=  []
+for tweet in tweets:
+    if tweet["sentiment"]>0:
+        pos_x.append(tweet["sentiment"])
+        pos_y.append(tweet["subjectivity"])
+        
+for tweet in tweets:
+    if tweet["sentiment"]<0:
+        neg_x.append(tweet["sentiment"])
+        neg_y.append(tweet["subjectivity"])
+        
 for tweet in tweets:
     if tweet["location"]:
         locations.append(tweet["location"])
@@ -85,10 +99,13 @@ wm.render_to_file('map.svg')
 x= [tweet["sentiment"] for tweet in tweets]
 y = [tweet["subjectivity"] for tweet in tweets]
 
-#########################################Plots################################3
+#########################################Plots################################
+
+
 #------------------------------LinePlot
 fig, ax = plt.subplots(facecolor='#000000')
-plt.plot(x, color='#FF8C00')
+plt.plot(pos_x, color='#FF8C00')
+plt.plot(neg_x)
 plt.rcParams['axes.facecolor'] = "#000000"
 plt.rcParams['lines.linewidth'] = 2
 plt.rcParams["figure.figsize"] = [11,4]
@@ -97,14 +114,14 @@ ax.tick_params(axis='y', colors='yellow')
 ax.set_xlabel("Number of Tweets",color = 'white')
 ax.set_ylabel("Polarity of the tweet",color = 'white')
 
-
 # Be sure to specify facecolor or it won't look right in Illustrator
 #fig.savefig("output.pdf", facecolor=fig.get_facecolor(), transparent=True)
 #-----------------------------ScatterPlot
-
 ##POSTIVE AND NEGATIVE DIFFERENT COLORS PLX
 fig, ax = plt.subplots(facecolor='#000000')
-plt.scatter(x,y, color='#9966ff')
+plt.scatter(pos_y,pos_x, color='#9966ff')
+plt.scatter(neg_y,neg_x)
+#plt.scatter(x,y)
 plt.rcParams['axes.facecolor'] = "#000000"
 plt.rcParams['lines.linewidth'] = 2
 plt.rcParams["figure.figsize"] = [11,4]
@@ -114,15 +131,26 @@ ax.set_xlabel("Number of Tweets",color = 'white')
 ax.set_ylabel("Polarity of the tweet",color = 'white')
 
 #----------------------------HeatPlot
-sns.heatmap([x,y])  
+sns.heatmap([x,y])
+#----------------------------asdasdPlot
+
+fig, ax = plt.subplots(facecolor='#000000')
+plt.plot(pos_x, color='#FF8C00')
+plt.rcParams['axes.facecolor'] = "#000000"
+plt.rcParams['lines.linewidth'] = 2
+plt.rcParams["figure.figsize"] = [22,4]
+plt.xticks([i*100 for i in range(30)])
+ax.tick_params(axis='x', colors='#4666FF')
+ax.tick_params(axis='y', colors='yellow')
+ax.set_xlabel("Number of Tweets",color = 'white')
+ax.set_ylabel("Polarity of the tweet",color = 'white')
 
 
-import pygal
 from pygal.maps.world import World
 
 wm = World()
 wm.force_uri_protocol = 'http'
 wm.title="Tweets from the world"
-wm.add('Tweets',{'mx': 3, 'es': 1, 'us': 5, 'gb': 1, 'ca': 1, 'ly': 1, 'sa': 1, 'th': 1, 'my': 1, 'tw': 1})
+wm.add('Tweets',myDict)
 
 wm.render_to_file('map.svg')
